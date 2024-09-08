@@ -170,6 +170,10 @@ embedding_model/
 temp
 logs/
 .vscode/
+embedding_model/
+temp
+logs/
+.vscode/
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
@@ -179,7 +183,11 @@ logs/
 
 #unwanted files
 
+
+#unwanted files
+
 fastapi.code-workspace
+
 
 sample.pdf
 Untitled.ipynb
