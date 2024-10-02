@@ -47,7 +47,7 @@ async def uploadfile(request: Request):
 
 @router.post("/processfile",response_class=HTMLResponse)
 async def process_pdf_file(request: Request, file_id: str = Form(...), file_name: str = Form(...), 
-                           file_topic: str = Form(...), file_author: str = Form(...), file: UploadFile = File(...)):
+                           file_topic: str = Form(...), file_genere: str = Form(...), file_author: str = Form(...), file: UploadFile = File(...)):
     # Save file locally for processing
     try:
         if len(Helper.find_files(file_id=file_id, collection  = collection))==0:
@@ -57,25 +57,27 @@ async def process_pdf_file(request: Request, file_id: str = Form(...), file_name
             text = Helper.parse_pdf(path) 
             #mongodb
             content = base64.b64encode(content_bytes)
-            message, condition = mongodb.add_files(content=content,fileid=file_id, filename= file_name, 
+            message, condition = mongodb.add_files(content=content,fileid=file_id, filename= file_name, genere = file_genere,
                               topic=file_topic, author=file_author,collection=collection)
             
             chunk_doc = Helper.create_chunk(file_id, file_name=file_name, text= text)
             #faiss
             if condition:
-                vector_ids = await faiss_db.add_document(chunks = chunk_doc, metadata= {"fileid":file_id,"topic":file_topic})
-                # upload_result = collection.update_one({"file_id":file_id},{"$set":{"vector_ids":vector_ids}})
+                logger.info("adding document to faiss db")
+                metadata = {"file_id": file_id,"file_name":file_name,"file_topic":file_topic,"file_genere": file_genere,"file_author":file_author}
+                vector_ids = await faiss_db.add_document(chunks = chunk_doc, metadata= metadata)
                 res = Helper.find_files(collection=collection, file_id=file_id)
                 if len(res)>0:
                     await Helper.update_vectorid(collection, file_id, vector_ids)
                 else:
-                    raise FileNotFoundError(f"error occured while updating vector id")
+                    raise FileNotFoundError(f"error occured while updating vector id and file is not found in mongo db")
                 faiss_db.save_local()
             
             return template.TemplateResponse(name = Constants.fetch_constant("templates")["processfile"], 
                                          context={"request":request, "file_id": file_id,
                                                   "file_name":file_name,
                                                   "file_topic":file_topic,
+                                                  "file_genere": file_genere,
                                                   "file_author":file_author,
                                                   "upload_status": message,
                                                   "filescount": await Helper.files_count(collection)})
@@ -85,6 +87,7 @@ async def process_pdf_file(request: Request, file_id: str = Form(...), file_name
                                          context={"request":request, "file_id": file_id,
                                                   "file_name":file_name,
                                                   "file_topic":file_topic,
+                                                  "file_genere": file_genere,
                                                   "file_author":file_author,
                                                   "upload_status": "File id is already available in db",
                                                   "filescount": await Helper.files_count(collection)})
@@ -177,7 +180,7 @@ async def delete(request: Request, file_id: str = Form(...)):
                                 "message": exe.__str__(),
                                 "filecount": await Helper.files_count(collection)
                             })
-@router.post("/filecont")
+@router.post("/filecount")
 
 def count_file(request: Request, file_id: str = Form(...)):
     try:

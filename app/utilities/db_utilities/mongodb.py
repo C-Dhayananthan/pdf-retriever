@@ -64,7 +64,7 @@ class MongoDB:
         else:
             return False
 
-    def add_files(self,content: str,fileid: str, topic: str, filename: str,author: str,collection):
+    def add_files(self,content: str,fileid: str, topic: str, genere: str, filename: str,author: str,collection):
         """
         Add a file to the MongoDB collection with metadata.
     
@@ -83,6 +83,7 @@ class MongoDB:
             Exception: If there is an error during the process of adding the file to MongoDB.
         """
         try:
+            logger.info("adding files to mongo collection")
             md5 = hashlib.md5()
             md5.update(content)
             hash = md5.hexdigest()
@@ -92,6 +93,7 @@ class MongoDB:
                     "name": filename,
                     "author": author,
                     "topic": topic,
+                    "genere": genere,
                     "md5" : hash
                     }
                 self.fs.put(content, **metadata)
@@ -132,6 +134,7 @@ class MongoDB:
                     dic["file_id"] = post["file_id"]
                     dic["name"] = post["name"]
                     dic["author"] = post["author"]
+                    dic["genere"] = post["genere"]
                     dic["topic"] = post["topic"]
                     if scores:
                         dic["score"] = scores[n]

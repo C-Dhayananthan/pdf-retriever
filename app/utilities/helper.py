@@ -41,7 +41,7 @@ class Helper(metaclass = DcSingleton):
             logger.info(f"Time Taken for parsing pdf {time.time() - start}")
             os.remove(path)
             logger.info("Removed temprory File")
-            return text
+            return text.lower()
         except Exception as exe:
             logger.info(f"Error in parsing pdf {exe}")
             raise exe
