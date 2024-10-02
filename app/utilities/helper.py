@@ -1,7 +1,7 @@
 import os
 import time
 
-import pdfplumber
+import pymupdf
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.docstore.document import Document
 from pymongo.collection import Collection
@@ -33,15 +33,15 @@ class Helper(metaclass = DcSingleton):
         try:
             logger.info("Started Parsing pdf")
             start = time.time()
-            with pdfplumber.open(path) as pdf:
+            with pymupdf.open(path) as pdf:
                     text = ""
-                    for n,page in enumerate(pdf.pages):
-                        text += page.extract_text() + "\n"
+                    for n,page in enumerate(pdf.pages()):
+                        text += page.get_text() + "\n"
                         logger.info(f"pg no {n}")
             logger.info(f"Time Taken for parsing pdf {time.time() - start}")
             os.remove(path)
             logger.info("Removed temprory File")
-            return text
+            return text.lower()
         except Exception as exe:
             logger.info(f"Error in parsing pdf {exe}")
             raise exe

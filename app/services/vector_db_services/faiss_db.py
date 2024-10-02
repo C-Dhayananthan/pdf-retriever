@@ -143,7 +143,7 @@ class FaissDB(VectorDBInterface):
             Exception: If there is an error running the query on the FAISS vector database.
         """
         retriever = self.db.as_retriever(search_type="similarity_score_threshold", search_kwargs={'score_threshold': Constants.fetch_constant("faissdb")["threshold"]})
-        result = await retriever.ainvoke(input = query)
+        result = await retriever.ainvoke(input = query.lower())
         fileids = []
         for doc in result:
             if doc.metadata["fileid"] not in fileids:
